@@ -1,0 +1,522 @@
+----------------------------------------------------------------------------------------------
+      name:  results
+       log:  D:\Policy Project\My attempt\Hand in\Fig5replication.log
+  log type:  text
+ opened on:   7 Nov 2025, 15:50:15
+
+. 
+. *Create results folder if it doesn't exist
+. cap mkdir "$proj/results"
+
+. global results "$proj/results"
+
+. 
+. *Bringing data in
+. import delimited "minimalCPS.csv", clear
+(encoding automatically selected: ISO-8859-1)
+(91 vars, 319,031 obs)
+
+. 
+. *****************************************************************
+. *Figure 5: Birth and mar probs by state policy*
+. *****************************************************************
+.         
+. keep if ageyrs>=22 & yob>=1935 & yob<=1960
+(15,597 observations deleted)
+
+. *Same sample restrictions I use prior to analysis:
+. drop if weight==0
+(18 observations deleted)
+
+. generate evermarried=1-nevermarried
+
+. drop if evermarried==0 & femstat==1 & insupp==1
+(6 observations deleted)
+
+. drop if evermarried==1 & femstat>=2 & femstat<=3 & insupp==1
+(136 observations deleted)
+
+. assert age_1mar==. if nevermarried==1, rc0 
+
+. assert age_1mar!=. if nevermarried==0 & insupp==1, rc0 
+
+. 
+. *"Treatment" is states where MCL policy allowed minors to consent to abortion in 1973
+. gen treatment=state==1|state==18|state==20|state==24|state==27|state==28|state==34|state==42
+> |state==30
+
+. replace treatment=. if repeal==1
+(57,589 real changes made, 57,589 to missing)
+
+. drop if state==33|state==38|state==39|state==41
+(23,035 observations deleted)
+
+. drop if state==8|state==12|state==18|state==21|state==29|state==31|state==37|state==45 /*pas
+> sed an MCL 1974-1975*/
+(45,821 observations deleted)
+
+. 
+. *Repeal states not in this sample-- too hard to see what's going on
+. drop if repeal==1
+(57,589 observations deleted)
+
+. 
+. *Can't collapse with pweights for se, so doing the following to get confidence intervals
+. *Surely there's an easier way(?)
+. svyset [pweight=weight]
+
+Sampling weights: weight
+             VCE: linearized
+     Single unit: missing
+        Strata 1: <one>
+ Sampling unit 1: <observations>
+           FPC 1: <zero>
+
+. foreach var in firstbirth17 firstmar17 shotgun17{
+  2. quietly svy: prop `var', over(treatment yob)
+  3. matrix `var'=(e(b)',vecdiag(e(V))')
+  4. }
+
+. matrix results=firstbirth17, firstmar17, shotgun17
+
+. matrix list results
+
+results[104,6]
+                    y1         r1         y1         r1         y1         r1
+0.firstbi~17@
+0.treatment#
+   1935.yob  .89954699  .00004642  .81080943  .00007938  .97148048  .00001319
+0.firstbi~17@
+0.treatment#
+   1936.yob  .91071681  .00004326  .81569529  .00007591  .96792394  .00001549
+0.firstbi~17@
+0.treatment#
+   1937.yob  .90530439  .00004734   .8200024  .00007747  .96327439  .00001721
+0.firstbi~17@
+0.treatment#
+   1938.yob  .88952052  .00004532  .79557536   .0000763  .94795885  .00002211
+0.firstbi~17@
+0.treatment#
+   1939.yob  .89767191  .00004713  .79513197  .00008043  .96653442  .00001509
+0.firstbi~17@
+0.treatment#
+   1940.yob  .88752469  .00004647  .82387386  .00006784  .96260529  .00001595
+0.firstbi~17@
+0.treatment#
+   1941.yob  .90539545  .00003681  .82604841   .0000613  .95951333  .00001566
+0.firstbi~17@
+0.treatment#
+   1942.yob  .91728777  .00002416  .83234805  .00004694  .96198257   .0000114
+0.firstbi~17@
+0.treatment#
+   1943.yob  .90542963  .00002701   .8293628  .00004367  .96289668  9.945e-06
+0.firstbi~17@
+0.treatment#
+   1944.yob  .90770973  .00002683  .83749209  .00004313  .96254149  .00001153
+0.firstbi~17@
+0.treatment#
+   1945.yob   .9000968  .00003001  .82661554  .00004475  .95352479  .00001293
+0.firstbi~17@
+0.treatment#
+   1946.yob  .92100761  .00001866  .85458211   .0000314  .95868709  9.500e-06
+0.firstbi~17@
+0.treatment#
+   1947.yob  .91008955   .0000187  .84870677  .00002869  .95834774  8.538e-06
+0.firstbi~17@
+0.treatment#
+   1948.yob  .92271933   .0000155     .87277  .00002433  .96745598  6.398e-06
+0.firstbi~17@
+0.treatment#
+   1949.yob  .92143608  .00001642  .88574918  .00002221  .96870394  6.396e-06
+0.firstbi~17@
+0.treatment#
+   1950.yob   .9165255  .00001695  .88203605   .0000226  .96257203  7.764e-06
+0.firstbi~17@
+0.treatment#
+   1951.yob  .92181906  .00001661  .87868327  .00002414   .9631829  8.106e-06
+0.firstbi~17@
+0.treatment#
+   1952.yob  .91055279  .00001748  .87323024  .00002212  .96224908  7.045e-06
+0.firstbi~17@
+0.treatment#
+   1953.yob  .90504599  .00001789  .86648321  .00002353  .95925765  7.679e-06
+0.firstbi~17@
+0.treatment#
+   1954.yob  .89940412  .00001849  .85705025  .00002461  .95362711  8.708e-06
+0.firstbi~17@
+0.treatment#
+   1955.yob  .89144028  .00001956  .86234015  .00002318  .96053373  7.265e-06
+0.firstbi~17@
+0.treatment#
+   1956.yob  .88920061  .00002008   .8597296   .0000243  .95920405  7.715e-06
+0.firstbi~17@
+0.treatment#
+   1957.yob  .89458263  .00001958  .87582089  .00002189  .96302519  7.042e-06
+0.firstbi~17@
+0.treatment#
+   1958.yob  .89616051  .00002141  .87595971  .00002449  .96687325  6.833e-06
+0.firstbi~17@
+0.treatment#
+   1959.yob  .89245779  .00002408  .89075025  .00002404  .96443286  8.358e-06
+0.firstbi~17@
+0.treatment#
+   1960.yob  .91539852  .00001468  .91184821  .00001521  .97603987  4.187e-06
+0.firstbi~17@
+1.treatment#
+   1935.yob  .89320634  .00010553  .82025196  .00016222  .95394761  .00005347
+0.firstbi~17@
+1.treatment#
+   1936.yob  .89660287  .00010656  .83159184   .0001534   .9734307  .00002998
+0.firstbi~17@
+1.treatment#
+   1937.yob  .91688691    .000083  .85926105  .00012811  .96581057  .00003519
+0.firstbi~17@
+1.treatment#
+   1938.yob  .89972908  .00009672  .81612355  .00015601  .96174446  .00003969
+0.firstbi~17@
+1.treatment#
+   1939.yob  .91208918  .00009031  .83149297  .00014787  .95781487  .00004409
+0.firstbi~17@
+1.treatment#
+   1940.yob  .90929864  .00008773  .82606208  .00014709  .95872309  .00004145
+0.firstbi~17@
+1.treatment#
+   1941.yob  .91082756   .0000731  .84991776  .00011414  .96474956  .00003332
+0.firstbi~17@
+1.treatment#
+   1942.yob  .92926529  .00005174  .85670918  .00009451  .96572709  .00002343
+0.firstbi~17@
+1.treatment#
+   1943.yob  .90990825  .00005641   .8717423  .00007736  .96897438  .00002119
+0.firstbi~17@
+1.treatment#
+   1944.yob  .91439084  .00005492   .8620857  .00007952  .96371628  .00002158
+0.firstbi~17@
+1.treatment#
+   1945.yob  .92309814   .0000506  .88565465  .00006998  .97366116  .00001639
+0.firstbi~17@
+1.treatment#
+   1946.yob  .92750378  .00004441  .88595936  .00006253  .97860631   .0000117
+0.firstbi~17@
+1.treatment#
+   1947.yob  .92914345  .00003391   .8850912  .00005293  .96717719  .00001724
+0.firstbi~17@
+1.treatment#
+   1948.yob  .93131445  .00003196  .88650404  .00005223   .9711347  .00001356
+0.firstbi~17@
+1.treatment#
+   1949.yob  .92929634  .00003544  .89521393   .0000499  .96999401  .00001564
+0.firstbi~17@
+1.treatment#
+   1950.yob  .92943632  .00003353  .89359665  .00004845  .96474271  .00001717
+0.firstbi~17@
+1.treatment#
+   1951.yob  .92151873  .00003741  .90552543   .0000421  .97241785   .0000123
+0.firstbi~17@
+1.treatment#
+   1952.yob  .91848528  .00004021  .89651951  .00004539   .9633711  .00001697
+0.firstbi~17@
+1.treatment#
+   1953.yob  .91497302  .00003729  .89195361  .00004679  .96559103  .00001606
+0.firstbi~17@
+1.treatment#
+   1954.yob  .91055206  .00003678  .89374966  .00004237  .96330291  .00001591
+0.firstbi~17@
+1.treatment#
+   1955.yob  .90575747  .00004285   .8943668  .00004316  .96531941  .00001632
+0.firstbi~17@
+1.treatment#
+   1956.yob  .90956768  .00003883  .89271955  .00004371  .96727599  .00001386
+0.firstbi~17@
+1.treatment#
+   1957.yob  .92307283  .00003147  .91718414  .00003313  .97152687  .00001118
+0.firstbi~17@
+1.treatment#
+   1958.yob  .92874209  .00003517   .9181258  .00003977  .97819171  .00001087
+0.firstbi~17@
+1.treatment#
+   1959.yob  .90404531  .00005396  .92208278  .00003953  .97243226  .00001407
+0.firstbi~17@
+1.treatment#
+   1960.yob  .91884597  .00005575  .91751183   .0000513  .97070843  .00001943
+1.firstbi~17@
+0.treatment#
+   1935.yob  .10045301  .00004642  .18919057  .00007938  .02851952  .00001319
+1.firstbi~17@
+0.treatment#
+   1936.yob  .08928319  .00004326  .18430471  .00007591  .03207606  .00001549
+1.firstbi~17@
+0.treatment#
+   1937.yob  .09469561  .00004734   .1799976  .00007747  .03672561  .00001721
+1.firstbi~17@
+0.treatment#
+   1938.yob  .11047948  .00004532  .20442464   .0000763  .05204115  .00002211
+1.firstbi~17@
+0.treatment#
+   1939.yob  .10232809  .00004713  .20486803  .00008043  .03346558  .00001509
+1.firstbi~17@
+0.treatment#
+   1940.yob  .11247531  .00004647  .17612614  .00006784  .03739471  .00001595
+1.firstbi~17@
+0.treatment#
+   1941.yob  .09460455  .00003681  .17395159   .0000613  .04048667  .00001566
+1.firstbi~17@
+0.treatment#
+   1942.yob  .08271223  .00002416  .16765195  .00004694  .03801743   .0000114
+1.firstbi~17@
+0.treatment#
+   1943.yob  .09457037  .00002701   .1706372  .00004367  .03710332  9.945e-06
+1.firstbi~17@
+0.treatment#
+   1944.yob  .09229027  .00002683  .16250791  .00004313  .03745851  .00001153
+1.firstbi~17@
+0.treatment#
+   1945.yob   .0999032  .00003001  .17338446  .00004475  .04647521  .00001293
+1.firstbi~17@
+0.treatment#
+   1946.yob  .07899239  .00001866  .14541789   .0000314  .04131291  9.500e-06
+1.firstbi~17@
+0.treatment#
+   1947.yob  .08991045   .0000187  .15129323  .00002869  .04165226  8.538e-06
+1.firstbi~17@
+0.treatment#
+   1948.yob  .07728067   .0000155     .12723  .00002433  .03254402  6.398e-06
+1.firstbi~17@
+0.treatment#
+   1949.yob  .07856392  .00001642  .11425082  .00002221  .03129606  6.396e-06
+1.firstbi~17@
+0.treatment#
+   1950.yob   .0834745  .00001695  .11796395   .0000226  .03742797  7.764e-06
+1.firstbi~17@
+0.treatment#
+   1951.yob  .07818094  .00001661  .12131673  .00002414   .0368171  8.106e-06
+1.firstbi~17@
+0.treatment#
+   1952.yob  .08944721  .00001748  .12676976  .00002212  .03775092  7.045e-06
+1.firstbi~17@
+0.treatment#
+   1953.yob  .09495401  .00001789  .13351679  .00002353  .04074235  7.679e-06
+1.firstbi~17@
+0.treatment#
+   1954.yob  .10059588  .00001849  .14294975  .00002461  .04637289  8.708e-06
+1.firstbi~17@
+0.treatment#
+   1955.yob  .10855972  .00001956  .13765985  .00002318  .03946627  7.265e-06
+1.firstbi~17@
+0.treatment#
+   1956.yob  .11079939  .00002008   .1402704   .0000243  .04079595  7.715e-06
+1.firstbi~17@
+0.treatment#
+   1957.yob  .10541737  .00001958  .12417911  .00002189  .03697481  7.042e-06
+1.firstbi~17@
+0.treatment#
+   1958.yob  .10383949  .00002141  .12404029  .00002449  .03312675  6.833e-06
+1.firstbi~17@
+0.treatment#
+   1959.yob  .10754221  .00002408  .10924975  .00002404  .03556714  8.358e-06
+1.firstbi~17@
+0.treatment#
+   1960.yob  .08460148  .00001468  .08815179  .00001521  .02396013  4.187e-06
+1.firstbi~17@
+1.treatment#
+   1935.yob  .10679366  .00010553  .17974804  .00016222  .04605239  .00005347
+1.firstbi~17@
+1.treatment#
+   1936.yob  .10339713  .00010656  .16840816   .0001534   .0265693  .00002998
+1.firstbi~17@
+1.treatment#
+   1937.yob  .08311309    .000083  .14073895  .00012811  .03418943  .00003519
+1.firstbi~17@
+1.treatment#
+   1938.yob  .10027092  .00009672  .18387645  .00015601  .03825554  .00003969
+1.firstbi~17@
+1.treatment#
+   1939.yob  .08791082  .00009031  .16850703  .00014787  .04218513  .00004409
+1.firstbi~17@
+1.treatment#
+   1940.yob  .09070136  .00008773  .17393792  .00014709  .04127691  .00004145
+1.firstbi~17@
+1.treatment#
+   1941.yob  .08917244   .0000731  .15008224  .00011414  .03525044  .00003332
+1.firstbi~17@
+1.treatment#
+   1942.yob  .07073471  .00005174  .14329082  .00009451  .03427291  .00002343
+1.firstbi~17@
+1.treatment#
+   1943.yob  .09009175  .00005641   .1282577  .00007736  .03102562  .00002119
+1.firstbi~17@
+1.treatment#
+   1944.yob  .08560916  .00005492   .1379143  .00007952  .03628372  .00002158
+1.firstbi~17@
+1.treatment#
+   1945.yob  .07690186   .0000506  .11434535  .00006998  .02633884  .00001639
+1.firstbi~17@
+1.treatment#
+   1946.yob  .07249622  .00004441  .11404064  .00006253  .02139369   .0000117
+1.firstbi~17@
+1.treatment#
+   1947.yob  .07085655  .00003391   .1149088  .00005293  .03282281  .00001724
+1.firstbi~17@
+1.treatment#
+   1948.yob  .06868555  .00003196  .11349596  .00005223   .0288653  .00001356
+1.firstbi~17@
+1.treatment#
+   1949.yob  .07070366  .00003544  .10478607   .0000499  .03000599  .00001564
+1.firstbi~17@
+1.treatment#
+   1950.yob  .07056368  .00003353  .10640335  .00004845  .03525729  .00001717
+1.firstbi~17@
+1.treatment#
+   1951.yob  .07848127  .00003741  .09447457   .0000421  .02758215   .0000123
+1.firstbi~17@
+1.treatment#
+   1952.yob  .08151472  .00004021  .10348049  .00004539   .0366289  .00001697
+1.firstbi~17@
+1.treatment#
+   1953.yob  .08502698  .00003729  .10804639  .00004679  .03440897  .00001606
+1.firstbi~17@
+1.treatment#
+   1954.yob  .08944794  .00003678  .10625034  .00004237  .03669709  .00001591
+1.firstbi~17@
+1.treatment#
+   1955.yob  .09424253  .00004285   .1056332  .00004316  .03468059  .00001632
+1.firstbi~17@
+1.treatment#
+   1956.yob  .09043232  .00003883  .10728045  .00004371  .03272401  .00001386
+1.firstbi~17@
+1.treatment#
+   1957.yob  .07692717  .00003147  .08281586  .00003313  .02847313  .00001118
+1.firstbi~17@
+1.treatment#
+   1958.yob  .07125791  .00003517   .0818742  .00003977  .02180829  .00001087
+1.firstbi~17@
+1.treatment#
+   1959.yob  .09595469  .00005396  .07791722  .00003953  .02756774  .00001407
+1.firstbi~17@
+1.treatment#
+   1960.yob  .08115403  .00005575  .08248817   .0000513  .02929157  .00001943
+
+. clear
+
+. svmat results
+number of observations will be reset to 104
+Press any key to continue, or Break to abort
+Number of observations (_N) was 0, now 104.
+
+. 
+. drop if _n<=52 /*These are proportiosn of ones*/
+(52 observations deleted)
+
+. gen treatment=_n>26
+
+. bysort treatment: gen yob=1934+_n
+
+. order yob treatment 
+
+. rename (results1-results6) (birth17 birth17se mar17 mar17se shotgun17 shotgun17se)
+
+. foreach x in birth17 mar17 shotgun17{
+  2. replace `x'se=`x'se^0.5
+  3. }
+(52 real changes made)
+(52 real changes made)
+(52 real changes made)
+
+. 
+. 
+. foreach var in birth17 mar17 shotgun17{
+  2. generate `var'_lci=`var'-1.96*(`var'se)
+  3. generate `var'_uci=`var'+1.96*(`var'se)
+  4. }
+
+. 
+. drop if yob<1950
+(30 observations deleted)
+
+. 
+. tempfile birth1
+
+. tempfile mar1
+
+. 
+. # delimit ;
+delimiter now ;
+. set scheme s1mono;
+
+. twoway 
+>         (connect birth17 yob if treatment==1, lwidth(medthick) msymbol(square) lcolor(black)
+>  mcolor(black))
+>         (connect birth17 yob if treatment==0, lwidth(medthick) msymbol(circle) lcolor(black)
+>  mcolor(black))
+>         (connect birth17_lci yob if treatment==0, msymbol(circle_hollow) lpattern(dash) lwid
+> th(thin) lcolor(gs6) mcolor(gs6)) 
+>         (connect birth17_uci yob if treatment==0, msymbol(circle_hollow) lpattern(dash) lwid
+> th(thin) lcolor(gs6) mcolor(gs6)),
+>         plotregion(style(none))
+>         xline(1956, lstyle(dash) lcolor(black))
+>         xline(1959, lstyle(dash) lcolor(black))
+>         title("Panel a: Probability of first birth prior to age 18", position(11))
+>         xtitle(Year of birth)
+>         xlabel(1950(1)1961) 
+>         ylabel(0.07(0.01)0.13)
+>         legend(off)
+>         text(.12 1956.005 "16 when" "Roe" "decided", place(ne))
+>         text(.12 1959.005 "16 when" "Danforth" "decided", place(ne))
+>         saving(`birth1'.gph, replace);
+(note:  named style dash not found in class linestyle, default attributes used)
+(note:  named style dash not found in class linestyle, default attributes used)
+file C:\Users\phony\AppData\Local\Temp\ST_5bcc_000001.tmp.gph saved
+
+.          # delimit ;
+delimiter now ;
+. twoway
+>         (connect mar17 yob if treatment==1, lwidth(medthick) msymbol(square) lcolor(black) m
+> color(black))
+>         (connect mar17 yob if treatment==0, lwidth(medthick) msymbol(circle) lcolor(black) m
+> color(black))
+>         (connect mar17_lci yob if treatment==0, msymbol(circle_hollow) lpattern(dash) lwidth
+> (thin) lcolor(gs6) mcolor(gs6)) 
+>         (connect mar17_uci yob if treatment==0, msymbol(circle_hollow) lpattern(dash) lwidth
+> (thin) lcolor(gs6) mcolor(gs6)),
+>         plotregion(style(none))
+>         xline(1956, lstyle(dash) lcolor(black))
+>         xline(1959, lstyle(dash) lcolor(black))
+>         title("Panel b: Probability of first marriage prior to age 18", position(11))
+>         xtitle(Year of birth, size(small) margin(small))
+>         xlabel(1950(1)1961, labsize(small))
+>         legend(on col(1) order(1 "MCL policy permitted minors to consent in 1973" 2 "Minors 
+> could not consent 1973-1975" "with 95% C.I.") size(small))
+>         text(.15 1956.005 "16 years old when" "Roe decided", place(ne) size(vsmall))
+>         text(.15 1959.005 "16 years old when" "Danforth decided", place(ne) size(vsmall))
+>         saving(`mar1'.gph, replace);
+(note:  named style dash not found in class linestyle, default attributes used)
+(note:  named style dash not found in class linestyle, default attributes used)
+file C:\Users\phony\AppData\Local\Temp\ST_5bcc_000002.tmp.gph saved
+
+.                 *Combined Graph
+> # delimit ;
+. set scheme s1mono;
+
+. graph combine `birth1'.gph `mar1'.gph,
+>         col(1)
+>         ysize(8);
+(note:  named style dash not found in class linestyle, default attributes used)
+(note:  named style dash not found in class linestyle, default attributes used)
+(note:  named style dash not found in class linestyle, default attributes used)
+(note:  named style dash not found in class linestyle, default attributes used)
+
+. graph export "$results\Figure5.pdf", replace;
+file D:\Policy Project\My attempt\Hand in/results\Figure5.pdf saved as PDF format
+
+. graph export "$results\Figure5.eps", replace mag(80);
+file D:\Policy Project\My attempt\Hand in/results\Figure5.eps saved as EPS format
+
+.         # delimit cr
+delimiter now cr
+. 
+. log close results
+      name:  results
+       log:  D:\Policy Project\My attempt\Hand in\Fig5replication.log
+  log type:  text
+ closed on:   7 Nov 2025, 15:50:29
+----------------------------------------------------------------------------------------------
